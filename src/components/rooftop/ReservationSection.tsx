@@ -13,6 +13,7 @@ export function ReservationSection() {
   const [status, setStatus] = useState<ReservationState>("idle");
   const [formData, setFormData] = useState({
     name: "",
+    email: "",
     phone: "",
     guests: "2",
     date: "",
@@ -82,9 +83,14 @@ export function ReservationSection() {
                     </div>
                     
                     <div className="relative group">
-                      <input type="tel" name="phone" required value={formData.phone} onChange={handleInputChange} className="w-full bg-white border-2 border-[#E5E7EB] rounded-xl px-4 pt-6 pb-2 text-[#1A1A1A] outline-none focus:border-[#FF8A00] transition-colors peer" />
-                      <label className="absolute left-4 top-4 text-xs text-[#6B7280] uppercase tracking-wider font-semibold transition-all peer-focus:text-[#FF8A00] peer-focus:top-2 peer-focus:text-[10px] peer-valid:top-2 peer-valid:text-[10px]">Phone Number</label>
+                      <input type="email" name="email" required value={formData.email} onChange={handleInputChange} className="w-full bg-white border-2 border-[#E5E7EB] rounded-xl px-4 pt-6 pb-2 text-[#1A1A1A] outline-none focus:border-[#FF8A00] transition-colors peer" />
+                      <label className="absolute left-4 top-4 text-xs text-[#6B7280] uppercase tracking-wider font-semibold transition-all peer-focus:text-[#FF8A00] peer-focus:top-2 peer-focus:text-[10px] peer-valid:top-2 peer-valid:text-[10px]">Email Address</label>
                     </div>
+                  </div>
+
+                  <div className="relative group">
+                    <input type="tel" name="phone" required value={formData.phone} onChange={handleInputChange} className="w-full bg-white border-2 border-[#E5E7EB] rounded-xl px-4 pt-6 pb-2 text-[#1A1A1A] outline-none focus:border-[#FF8A00] transition-colors peer" />
+                    <label className="absolute left-4 top-4 text-xs text-[#6B7280] uppercase tracking-wider font-semibold transition-all peer-focus:text-[#FF8A00] peer-focus:top-2 peer-focus:text-[10px] peer-valid:top-2 peer-valid:text-[10px]">Phone Number</label>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

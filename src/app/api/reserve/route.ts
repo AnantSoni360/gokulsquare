@@ -8,7 +8,7 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { name, phone, guests, date, time, table } = body;
+    const { name, phone, date, time, guests, table, email } = body;
 
     if (!name || !phone || !date || !time || !table) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -28,6 +28,7 @@ export async function POST(req: Request) {
     const reservation = await Reservation.create({
       name,
       phone: formattedPhone,
+      email,
       guests,
       date,
       time,

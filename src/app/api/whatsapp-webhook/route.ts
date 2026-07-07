@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Reservation from "@/models/Reservation";
 import twilio from "twilio";
+import nodemailer from "nodemailer";
 
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
@@ -63,6 +64,70 @@ export async function POST(req: Request) {
         from: twilioPhone,
         to: toCustomer,
       });
+
+      // Send Email if email exists
+      if (pendingReservation.email && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+        try {
+          const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+              user: process.env.EMAIL_USER,
+              pass: process.env.EMAIL_PASS,
+            },
+          });
+
+          let emailSubject = "";
+          let emailHtml = "";
+
+          if (pendingReservation.type === "LODGING") {
+            emailSubject = "Reservation Confirmed - Gokul Square";
+            emailHtml = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #FF8A00;">Lodging Confirmed!</h2>
+                <p>Dear ${pendingReservation.name || "Guest"},</p>
+                <p>Your stay at Gokul Square is officially confirmed. Here are your details:</p>
+                <ul>
+                  <li><strong>Room:</strong> ${pendingReservation.roomName}</li>
+                  <li><strong>Check-In:</strong> ${pendingReservation.checkIn}</li>
+                  <li><strong>Check-Out:</strong> ${pendingReservation.checkOut}</li>
+                  <li><strong>Guests:</strong> ${pendingReservation.guests}</li>
+                </ul>
+                <p>If you have any questions, feel free to reply to this email.</p>
+                <br/>
+                <p>Best regards,<br/><strong>Gokul Square Team</strong></p>
+              </div>
+            `;
+          } else {
+            emailSubject = "Table Reservation Confirmed - Gokul Square";
+            emailHtml = `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+                <h2 style="color: #FF8A00;">Table Reserved!</h2>
+                <p>Dear ${pendingReservation.name || "Guest"},</p>
+                <p>Your table reservation at Gokul Square is officially confirmed. Here are your details:</p>
+                <ul>
+                  <li><strong>Table:</strong> ${pendingReservation.table}</li>
+                  <li><strong>Date:</strong> ${pendingReservation.date}</li>
+                  <li><strong>Time:</strong> ${pendingReservation.time}</li>
+                  <li><strong>Guests:</strong> ${pendingReservation.guests}</li>
+                </ul>
+                <p>We look forward to serving you!</p>
+                <br/>
+                <p>Best regards,<br/><strong>Gokul Square Team</strong></p>
+              </div>
+            `;
+          }
+
+          await transporter.sendMail({
+            from: `"Gokul Square" <${process.env.EMAIL_USER}>`,
+            to: pendingReservation.email,
+            subject: emailSubject,
+            html: emailHtml,
+          });
+          console.log("Email sent successfully to", pendingReservation.email);
+        } catch (emailErr) {
+          console.error("Failed to send email:", emailErr);
+        }
+      }
 
       // Confirm to owner
       await client.messages.create({
