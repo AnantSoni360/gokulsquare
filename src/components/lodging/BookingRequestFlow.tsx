@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, Loader2, Calendar as CalIcon, ChevronRight } from "lucide-react";
+import { CheckCircle2, Loader2, Calendar as CalIcon, ChevronRight, XCircle } from "lucide-react";
 
-type FlowState = "idle" | "loading" | "pending" | "confirmed";
+type FlowState = "idle" | "loading" | "pending" | "confirmed" | "rejected";
 
 export function BookingRequestFlow({ roomName = "Premium King Room" }) {
   const [status, setStatus] = useState<FlowState>("idle");
+  const [reservationId, setReservationId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     checkIn: "",
     checkOut: "",
@@ -21,6 +22,28 @@ export function BookingRequestFlow({ roomName = "Premium King Room" }) {
 
   // Mock Calendar State
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (status === "pending" && reservationId) {
+      interval = setInterval(async () => {
+        try {
+          const res = await fetch(`/api/reservation-status?id=${reservationId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.status === "CONFIRMED") {
+              setStatus("confirmed");
+            } else if (data.status === "REJECTED") {
+              setStatus("rejected");
+            }
+          }
+        } catch (e) {
+          console.error("Polling error", e);
+        }
+      }, 3000); // Check every 3 seconds
+    }
+    return () => clearInterval(interval);
+  }, [status, reservationId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,6 +59,7 @@ export function BookingRequestFlow({ roomName = "Premium King Room" }) {
       const data = await response.json();
       
       if (response.ok) {
+        setReservationId(data.reservation._id);
         setStatus("pending");
       } else {
         console.error("Error booking:", data.error);
@@ -231,6 +255,20 @@ export function BookingRequestFlow({ roomName = "Premium King Room" }) {
 
                   <button className="w-full py-4 bg-[#FF8A00] text-white font-bold rounded-xl transition-transform hover:scale-105 shadow-lg shadow-[#FF8A00]/20 flex justify-center items-center gap-2">
                     Download Reservation <ChevronRight size={20} />
+                  </button>
+                </motion.div>
+              )}
+
+              {status === "rejected" && (
+                <motion.div key="rejected" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="bg-white border border-red-200 rounded-[24px] p-8 shadow-2xl relative overflow-hidden text-center">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-red-400/20 rounded-full blur-[50px] -z-10" />
+                  <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: "spring" }} className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6 text-red-600">
+                    <XCircle size={40} />
+                  </motion.div>
+                  <h4 className="text-3xl font-bold text-[#1A1A1A] mb-2">Unavailable</h4>
+                  <p className="text-[#6B7280] mb-8">Sorry, we could not accommodate your request for these dates.</p>
+                  <button onClick={() => setStatus("idle")} className="w-full py-4 bg-[#1A1A1A] text-white font-bold rounded-xl transition-transform hover:scale-105 shadow-lg flex justify-center items-center gap-2">
+                    Try Different Dates
                   </button>
                 </motion.div>
               )}
