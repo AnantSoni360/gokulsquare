@@ -14,12 +14,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Automatically format phone number for India (+91) if user forgot it
+    let formattedPhone = phone.trim();
+    if (formattedPhone.length === 10 && !formattedPhone.startsWith("+")) {
+      formattedPhone = `+91${formattedPhone}`;
+    } else if (formattedPhone.startsWith("0")) {
+      formattedPhone = `+91${formattedPhone.slice(1)}`;
+    }
+
     await dbConnect();
 
     // Create reservation in DB
     const reservation = await Reservation.create({
       name,
-      phone,
+      phone: formattedPhone,
       guests,
       date,
       time,
@@ -35,7 +43,7 @@ export async function POST(req: Request) {
     const to = ownerPhone?.startsWith('whatsapp:') ? ownerPhone : `whatsapp:${ownerPhone}`;
     const from = twilioPhone?.startsWith('whatsapp:') ? twilioPhone : `whatsapp:${twilioPhone}`;
 
-    const messageBody = `*New Reservation Request!*\n\nCustomer: ${name}\nPhone: ${phone}\nTable: ${table}\nDate: ${date}\nTime: ${time}\nGuests: ${guests}\n\nReply *YES* to accept or *NO* to decline.`;
+    const messageBody = `*New Reservation Request!*\n\nCustomer: ${name}\nPhone: ${formattedPhone}\nTable: ${table}\nDate: ${date}\nTime: ${time}\nGuests: ${guests}\n\nReply *YES* to accept or *NO* to decline.`;
 
     await client.messages.create({
       body: messageBody,
