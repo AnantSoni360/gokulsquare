@@ -112,7 +112,13 @@ export function BookingRequestFlow({ roomName = "Premium King Room" }) {
                   <button 
                     key={i} 
                     disabled={isBooked}
-                    onClick={() => setSelectedDate(day)}
+                    onClick={() => {
+                      setSelectedDate(day);
+                      setFormData(p => ({ 
+                        ...p, 
+                        checkIn: `2026-07-${day.toString().padStart(2, '0')}` 
+                      }));
+                    }}
                     className={`aspect-square rounded-xl border flex items-center justify-center font-bold transition-all duration-300 ${bg}`}
                   >
                     {day}
@@ -127,11 +133,11 @@ export function BookingRequestFlow({ roomName = "Premium King Room" }) {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <label className="text-xs uppercase font-bold text-[#6B7280] mb-2 block">Check-in</label>
-                <input type="date" name="checkIn" required onChange={handleChange} className="w-full bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl px-4 py-3 outline-none focus:border-[#FF8A00] transition-colors" />
+                <input type="date" name="checkIn" required value={formData.checkIn} onChange={handleChange} className="w-full bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl px-4 py-3 outline-none focus:border-[#FF8A00] transition-colors" />
               </div>
               <div>
                 <label className="text-xs uppercase font-bold text-[#6B7280] mb-2 block">Check-out</label>
-                <input type="date" name="checkOut" required onChange={handleChange} className="w-full bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl px-4 py-3 outline-none focus:border-[#FF8A00] transition-colors" />
+                <input type="date" name="checkOut" required value={formData.checkOut} onChange={handleChange} className="w-full bg-[#FAFAFA] border border-[#E5E7EB] rounded-xl px-4 py-3 outline-none focus:border-[#FF8A00] transition-colors" />
               </div>
             </div>
 
