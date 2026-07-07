@@ -3,6 +3,8 @@
   <h1>Gokul Square 🏢✨</h1>
   <p><em>Where Businesses Grow — Toranagallu's Premium Commercial Destination</em></p>
   
+  <p><strong>🌍 Live Website: <a href="https://gokulsquare.vercel.app/">gokulsquare.vercel.app</a></strong></p>
+
   ![Next.js](https://img.shields.io/badge/Next.js-15+-black?style=for-the-badge&logo=next.js)
   ![React](https://img.shields.io/badge/React-19-blue?style=for-the-badge&logo=react)
   ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-38B2AC?style=for-the-badge&logo=tailwind-css)
