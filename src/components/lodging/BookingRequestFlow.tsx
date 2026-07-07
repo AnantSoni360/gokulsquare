@@ -22,20 +22,31 @@ export function BookingRequestFlow({ roomName = "Premium King Room" }) {
   // Mock Calendar State
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
     
-    // Simulate network delay
-    setTimeout(() => {
-      setStatus("pending");
+    try {
+      const response = await fetch("/api/reserve-lodging", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...formData, roomName })
+      });
       
-      // Auto-approve after 6 seconds for demonstration
-      setTimeout(() => {
-        setStatus("confirmed");
-      }, 6000);
+      const data = await response.json();
       
-    }, 2000);
+      if (response.ok) {
+        setStatus("pending");
+      } else {
+        console.error("Error booking:", data.error);
+        setStatus("idle");
+        alert(`Failed: ${data.error}\n\nCheck Vercel logs or your MongoDB/Twilio config.`);
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("idle");
+      alert("Something went wrong.");
+    }
   };
 
   const handleChange = (e: any) => setFormData(p => ({ ...p, [e.target.name]: e.target.value }));
@@ -169,7 +180,7 @@ export function BookingRequestFlow({ roomName = "Premium King Room" }) {
                     <div className="w-4 h-4 bg-[#FF8A00] rounded-full" />
                   </div>
                   <h4 className="text-2xl font-bold text-[#1A1A1A] text-center mb-2">Request Sent</h4>
-                  <p className="text-[#6B7280] text-center mb-8">Waiting for approval from Reception.</p>
+                  <p className="text-[#6B7280] text-center mb-8">Waiting for approval from Reception via WhatsApp.</p>
 
                   <div className="space-y-6 relative before:absolute before:inset-0 before:ml-4 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-[#FF8A00] before:to-[#E5E7EB]">
                     <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">

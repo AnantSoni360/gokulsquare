@@ -50,16 +50,23 @@ export async function POST(req: Request) {
       pendingReservation.status = "CONFIRMED";
       await pendingReservation.save();
 
-      // Send confirmation to customer
+      // Send confirmation to customer based on TYPE
+      let confirmMessage = "";
+      if (pendingReservation.type === "LODGING") {
+        confirmMessage = `🎉 *Lodging Confirmed!*\n\nDear ${pendingReservation.name || "Guest"},\nYour stay at Gokul Square is confirmed!\n\nRoom: *${pendingReservation.roomName}*\nCheck-In: *${pendingReservation.checkIn}*\nCheck-Out: *${pendingReservation.checkOut}*\n\nWe look forward to welcoming you!`;
+      } else {
+        confirmMessage = `🎉 *Reservation Confirmed!*\n\nDear ${pendingReservation.name || "Guest"},\nYour table *${pendingReservation.table}* is reserved for *${pendingReservation.date}* at *${pendingReservation.time}* for ${pendingReservation.guests} guests.\n\nWe look forward to serving you at Gokul Square!`;
+      }
+
       await client.messages.create({
-        body: `🎉 *Reservation Confirmed!*\n\nDear ${pendingReservation.name},\nYour table *${pendingReservation.table}* is reserved for *${pendingReservation.date}* at *${pendingReservation.time}* for ${pendingReservation.guests} guests.\n\nWe look forward to serving you at Gokul Square!`,
+        body: confirmMessage,
         from: twilioPhone,
         to: toCustomer,
       });
 
       // Confirm to owner
       await client.messages.create({
-        body: "Reservation confirmed. Customer has been notified.",
+        body: `${pendingReservation.type} Reservation confirmed. Customer has been notified.`,
         from: twilioPhone,
         to: from,
       });
@@ -68,16 +75,23 @@ export async function POST(req: Request) {
       pendingReservation.status = "REJECTED";
       await pendingReservation.save();
 
-      // Send rejection to customer
+      // Send rejection to customer based on TYPE
+      let rejectMessage = "";
+      if (pendingReservation.type === "LODGING") {
+        rejectMessage = `😔 *Reservation Update*\n\nDear ${pendingReservation.name || "Guest"},\nWe are sorry, but we cannot accommodate your booking for the *${pendingReservation.roomName}* on your requested dates.\n\nPlease contact reception for alternate dates.`;
+      } else {
+        rejectMessage = `😔 *Reservation Update*\n\nDear ${pendingReservation.name || "Guest"},\nWe are sorry, but we cannot accommodate your booking for table *${pendingReservation.table}* at this time.\n\nPlease choose another time or contact our receptionist directly.`;
+      }
+
       await client.messages.create({
-        body: `😔 *Reservation Update*\n\nDear ${pendingReservation.name},\nWe are sorry, but we cannot accommodate your booking for table *${pendingReservation.table}* at this time.\n\nPlease choose another time or contact our receptionist directly.`,
+        body: rejectMessage,
         from: twilioPhone,
         to: toCustomer,
       });
 
       // Confirm to owner
       await client.messages.create({
-        body: "Reservation declined. Customer has been notified.",
+        body: `${pendingReservation.type} Reservation declined. Customer has been notified.`,
         from: twilioPhone,
         to: from,
       });
