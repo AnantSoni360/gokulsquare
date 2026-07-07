@@ -46,6 +46,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, reservation });
   } catch (error: any) {
     console.error("Booking API Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // Return detailed error for debugging
+    const errorMessage = error?.message || "Unknown error";
+    const errorStack = error?.stack || "";
+    return NextResponse.json({ 
+      error: `API Error: ${errorMessage}`,
+      details: errorStack
+    }, { status: 500 });
   }
 }

@@ -39,7 +39,7 @@ export function ReservationSection() {
       } else {
         console.error("Error booking:", data.error);
         setStatus("idle");
-        alert("Failed to send booking request.");
+        alert(`Failed: ${data.error}\n\nCheck Vercel logs or your MongoDB/Twilio config.`);
       }
     } catch (err) {
       console.error(err);
