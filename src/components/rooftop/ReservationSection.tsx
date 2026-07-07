@@ -17,25 +17,35 @@ export function ReservationSection() {
     guests: "2",
     date: "",
     time: "",
-    occasion: "None",
+    table: "W1",
     request: ""
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("loading");
     
-    // Mock network request
-    setTimeout(() => {
-      setStatus("pending");
+    try {
+      const response = await fetch("/api/reserve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
       
-      // Auto confirm after another delay for demonstration purposes
-      // In a real app, this would wait for reception approval
-      setTimeout(() => {
-        setStatus("confirmed");
-      }, 5000);
+      const data = await response.json();
       
-    }, 2000);
+      if (response.ok) {
+        setStatus("pending");
+      } else {
+        console.error("Error booking:", data.error);
+        setStatus("idle");
+        alert("Failed to send booking request.");
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("idle");
+      alert("Something went wrong.");
+    }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
@@ -95,14 +105,14 @@ export function ReservationSection() {
                   </div>
 
                   <div className="relative group">
-                    <select name="occasion" value={formData.occasion} onChange={handleInputChange} className="w-full bg-white border-2 border-[#E5E7EB] rounded-xl px-4 pt-6 pb-2 text-[#1A1A1A] outline-none focus:border-[#FF8A00] transition-colors appearance-none">
-                      <option value="None">None</option>
-                      <option value="Birthday">Birthday</option>
-                      <option value="Anniversary">Anniversary</option>
-                      <option value="Business">Business</option>
-                      <option value="Other">Other</option>
+                    <select name="table" value={formData.table} onChange={handleInputChange} className="w-full bg-white border-2 border-[#E5E7EB] rounded-xl px-4 pt-6 pb-2 text-[#1A1A1A] outline-none focus:border-[#FF8A00] transition-colors appearance-none">
+                      <option value="W1">W1 (Window)</option>
+                      <option value="W2">W2 (Window)</option>
+                      <option value="C1">C1 (Center)</option>
+                      <option value="C2">C2 (Center)</option>
+                      <option value="P1">P1 (Premium)</option>
                     </select>
-                    <label className="absolute left-4 top-2 text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Special Occasion</label>
+                    <label className="absolute left-4 top-2 text-[10px] text-[#6B7280] uppercase tracking-wider font-semibold">Select Table</label>
                   </div>
 
                   <div className="relative group">
@@ -146,8 +156,7 @@ export function ReservationSection() {
                 <div className="bg-[#FFC857]/20 text-[#FF8A00] px-4 py-1 rounded-full text-sm font-semibold uppercase tracking-wider mb-6 inline-block">
                   Pending Approval
                 </div>
-                <p className="text-[#6B7280] max-w-sm">Our reception team is reviewing your request. You will receive a confirmation shortly.</p>
-                <p className="text-xs text-[#6B7280] mt-8">(Simulating approval... wait 5 seconds)</p>
+                <p className="text-[#6B7280] max-w-sm">Our reception team is reviewing your request. You will receive a WhatsApp confirmation shortly.</p>
               </motion.div>
             )}
 
@@ -176,7 +185,7 @@ export function ReservationSection() {
                     </div>
                     <div>
                       <p className="text-green-600/70">Table No.</p>
-                      <p className="font-medium text-green-900">W2 (Window)</p>
+                      <p className="font-medium text-green-900">{formData.table}</p>
                     </div>
                     <div>
                       <p className="text-green-600/70">Date</p>
